@@ -70,6 +70,16 @@ func TestBuilder(t *testing.T) {
 			},
 			d,
 		)
+
+		os.WriteFile("testdata/test2.blobmap", []byte{
+			0, 0, 0, 0, 0, 0, 0, 2,
+			0, 0, 0, 0, 0, 0, 0, 42,
+			0, 0, 0, 0, 0, 0, 0, 5,
+			0, 0, 0, 0, 0, 0, 0, 10,
+			104, 101, 108, 108, 111,
+			119, 111, 114, 108, 100,
+			0x7e, 0x8c, 0x6d, 0x29, 0x14, 0xc4, 0x18, 0xe8,
+		}, 0644)
 	})
 
 	t.Run("size 4 builder", func(t *testing.T) {
@@ -113,6 +123,7 @@ func TestBuilder(t *testing.T) {
 			},
 			d,
 		)
+
 	})
 
 }
