@@ -1,10 +1,12 @@
 package blobmap
 
 import (
+	"encoding/binary"
 	"fmt"
 	"os"
 	"sync"
 
+	"github.com/cespare/xxhash/v2"
 	"github.com/tysonmote/gommap"
 )
 
@@ -76,12 +78,16 @@ func (b *Builder) Build() error {
 
 	totalSize := b.layout.totalSize()
 
+	hash := xxhash.Sum64(b.mm[:totalSize])
+
+	binary.BigEndian.PutUint64(b.mm[totalSize:], hash)
+
 	err := b.mm.UnsafeUnmap()
 	if err != nil {
 		return fmt.Errorf("failed to unmap file: %w", err)
 	}
 
-	err = b.f.Truncate(int64(totalSize))
+	err = b.f.Truncate(int64(totalSize + 8))
 	if err != nil {
 		return fmt.Errorf("failed to truncate file: %w", err)
 	}
@@ -113,7 +119,7 @@ func (b *Builder) Add(key uint64, value []byte) error {
 
 	b.layout.positions.setEndOf(relKey, endOffset)
 
-	err := b.ensureSize(endOffset + b.layout.getPrefixSize())
+	err := b.ensureSize(endOffset + b.layout.getPrefixSize() + 8)
 	if err != nil {
 		return fmt.Errorf("failed to grow file: %w", err)
 	}
